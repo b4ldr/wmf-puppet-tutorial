@@ -1,27 +1,30 @@
 class myfunckyservice (
+  # The String keyword here means puppet will fail if you try to pass anythig 
+  # which is not a string
+  # String is one of many tyeps built into puppet
+  # https://puppet.com/docs/puppet/7/lang_data_type.html
+  String           $owner = 'root',
+  String           $group = 'root',
+  # this is a custom type provided bye the puppet;abs module stdlib
+  # custom types will always be namespace (i.e. have a double colon)
+  # In this case the custom type is c$an alias to a regex type
+  # https://github.com/puppetlabs/puppetlabs-stdlib/blob/main/types/filemode.pp
+  Stdlib::Filemode $mode  = '0500',
 ) {
+  # It is quite common for the config file to be used in multiple places
+  # as such i tend to store it in a variable at the top so we can just refrence that
+  # also makes changing this in the future easier
+  # We could also have this as a parameter however i find that in production environments
+  # the config file path is rarely overridden
+  $config_file = '/etc/myfunckyservice/config.yaml'
   ensure_packages('myfunckyservice')
-  file {'/etc/myfunckyservice/config.yaml':
+  file {$config_file:
     ensure  => file,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0500',
-    # this file will be picked up from the following path
-    # modules/myfunckyservice/files/config.yaml
-    # if you forget the word modules i.e.
-    # puppet://config.yaml'
-    # then the file will be source from
-    # files/config.yaml
+    owner   => $owner,
+    group   => $group,
+    mode    => $mode,
     source  => 'puppet:///modules/config.yaml',
-    # this enures the myfunckyservice package resource
-    # (which is created using ensure_packages('myfunckyservice'))
-    # is realized before _this_ resource
     require => Package['myfunckyservice'],
-    # puppet also has a before keyword so we could ensure that _this_ resource
-    # is realized before Package['myfunckyservice'] (which doesn't make senses here)
-    # e.g.
-    # before => Package['myfunckyservice'],
   }
-  # write our the config file
   # manage the service
 }
