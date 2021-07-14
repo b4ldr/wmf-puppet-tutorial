@@ -24,6 +24,17 @@ class myfunckyservice (
     mode    => $mode,
     content => $config.to_yaml,
     require => Package['myfunckyservice'],
+    # the notify keeword is used to "refresh" another resource,  not all resources
+    # are refreshable and the ones that are do different things depending on the type.
+    # when refreshing (sending a notify) to a service resource on a sytemd system it will do
+    # `systemctl restart $service` which in the vast majority of cases is what you want to do
+    notify  => Service['myfunckyservice'],
   }
-  # manage the service
+  service {'myfunckyservice':
+    ensure      => running,
+    enabled     => true,
+    # we could use subscribe here like the example below but notify
+    # like `require` is more common
+    # subscribe => File[$config_file]
+  }
 }
