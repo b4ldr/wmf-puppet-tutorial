@@ -1,13 +1,6 @@
 profile::myfunckyservice::ensure: ensure
-# As mentioned previously the api_key is private and should not exist in our
-# puplic git repo.To ensure this we can add the value to the puppet private repo.
-# The puppet masteres all have a git repo under /srv/private which has a similar
-# hieradata structure to to the one in the control repo.  you should add this value
-# to hiera in the appropriate place in the private repo hieradata structre, this is
-# often the role level and not the profile level
+# in private repo
 # profile::myfunckyservice::api_key: private
-
-# As this is profile data its perfectly fine to put production specific defaults
 profile::myfunckyservice::api_uri: https://mfs.wikimedia.org/
 profile::myfunckyservice::owner: root
 profile::myfunckyservice::group: root
@@ -19,15 +12,6 @@ profile::myfunckyservice::datasets:
     query: 'som string'
     engine: 'mysql'
     user: 'user'
-    # this value is also private so we should also look this up in the private repo
-    # as this value is part of a hash its a bit more tricky to override.  for this
-    # example we will use a hiera Interpolation function[1] we could also us a hiera
-    # merge but ill save that for later
-    # [1]https://puppet.com/docs/puppet/7/hiera_merging.html#interpolation_functions
-    # as we are looking up :
-    #  profile::myfunckyservice::datasets::mysql::password
-    # we will also need to ensure that exists in the private repo
-    password: "%{lookup('profile::myfunckyservice::datasets::mysql::password')}
     host: 'db.example.org'
   sqlite:
     path: /srv/db/myfunkysevrvice.db

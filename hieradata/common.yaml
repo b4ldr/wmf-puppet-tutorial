@@ -1,0 +1,16 @@
+# lookup options should be defined in the common.yaml file
+# with lookup_options you can change how keys are merged[1]
+# and also cast types, here we ensure the api_key is cast to a Sensetive type
+# this prevents the value from showing up in diffs and log files, however there
+# are bugs so dont depend on it to keep things secret
+# [1]https://puppet.com/docs/puppet/7/hiera_merging.html#merge_behaviors
+lookup_options:
+  # This is how we cast a value to sensetive
+  profile::myfunckyservice::api_key:
+    convert_to: 'Sensitive'
+  # Here we are saying that we should use the deep merge stratagy[2] when looking
+  # up this key, this will allow use to only override the password value in the private
+  # repo instead of specifying the full has
+  # https://puppet.com/docs/puppet/7/hiera_merging.html#merge_behaviors-deep
+  profile::myfunckyservice::datasets:
+    merge: deep

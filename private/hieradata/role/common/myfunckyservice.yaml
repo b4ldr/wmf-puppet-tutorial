@@ -1,2 +1,4 @@
 profile::myfunckyservice::api_key: secret_api_key
-profile::myfunckyservice::datasets::mysql::password: secret_password
+profile::myfunckyservice::datasets:
+  mysql:
+    password: secret_password

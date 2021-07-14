@@ -15,9 +15,9 @@
 #    api_key => 'secret_key',
 #  }
 class myfunckyservice (
-  String                                 $api_key,
+  # As we are now casting the value to Sensetive in hire we also need to update the type checking here
+  Sensitive[String[1]]                   $api_key,
   Wmflib::Ensure                         $ensure      = 'present',
-  # We should have given this a sane default much earlier
   Stdlib::Httpurl                        $api_uri     = 'https://mfs.example.org',
   String                                 $owner       = 'root',
   String                                 $group       = 'root',
