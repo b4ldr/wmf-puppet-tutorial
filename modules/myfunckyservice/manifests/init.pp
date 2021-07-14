@@ -1,21 +1,18 @@
 class myfunckyservice (
-  # The String keyword here means puppet will fail if you try to pass anythig 
-  # which is not a string
-  # String is one of many tyeps built into puppet
-  # https://puppet.com/docs/puppet/7/lang_data_type.html
-  String           $owner = 'root',
-  String           $group = 'root',
-  # this is a custom type provided bye the puppet;abs module stdlib
-  # custom types will always be namespace (i.e. have a double colon)
-  # In this case the custom type is c$an alias to a regex type
-  # https://github.com/puppetlabs/puppetlabs-stdlib/blob/main/types/filemode.pp
-  Stdlib::Filemode $mode  = '0500',
+  # As this parameter has no default value it means it is mandatory
+  String           $api_key,
+  # this is another stdlib type see if you can find the definition
+  # (hint in the types dir of the stdlib module)
+  Stdlib::Httpurl  $api_uri,
+  String           $owner       = 'root',
+  String           $group       = 'root',
+  Stdlib::Filemode $mode        = '0500',
+  # By using Array and a default of [] we essentially make this param
+  # optional. will cover more advance use cases in further commits
+  Array            $access_list = [],
+  # similar to above we default this to an empty hash
+  Hash             $datasets    = {},
 ) {
-  # It is quite common for the config file to be used in multiple places
-  # as such i tend to store it in a variable at the top so we can just refrence that
-  # also makes changing this in the future easier
-  # We could also have this as a parameter however i find that in production environments
-  # the config file path is rarely overridden
   $config_file = '/etc/myfunckyservice/config.yaml'
   ensure_packages('myfunckyservice')
   file {$config_file:
@@ -23,7 +20,22 @@ class myfunckyservice (
     owner   => $owner,
     group   => $group,
     mode    => $mode,
-    source  => 'puppet:///modules/config.yaml',
+    # we change this here to use the content param and the template function.
+    # When using the source parameter puppet buts a reference to a file source location
+    # in the catalog.  This can be a http address a local file one the host or a puppet uri
+    # (by far the most common).  This instructs the puppet agent to fetch the file as it processes
+    # the catalog.
+    # the content parameter on the other hand tags a string and ads the raw string directly into the
+    # catalog (this means you can see diffs in pcc when using content but you cant using source)
+    #
+    # The template function pareses an erb file and return the parsed template as a string
+    # notice in this case we have to use the module name in the call to template and we drop
+    # the word 'modules'.  this is jut the way it is.  this will expect to fine a template in
+    # modules/myfunckyservice/templates/config.yaml.erb
+    # if we left out the module name i.e. `template('config.yaml.erb')` the template would be
+    # pulled from `templates/config.yaml.erb` there is no templates dir in the ops puppet control
+    # repo and you are unlikely to ever need to put  template file there
+    content => template('myfunckyservice/config.yaml.erb'),
     require => Package['myfunckyservice'],
   }
   # manage the service
